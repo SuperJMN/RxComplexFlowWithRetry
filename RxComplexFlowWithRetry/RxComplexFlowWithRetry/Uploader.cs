@@ -2,6 +2,7 @@
 {
     using System;
     using System.Reactive.Linq;
+    using System.Reactive.Subjects;
     using System.Threading;
 
     public class Uploader
@@ -10,8 +11,8 @@
 
         public Uploader(IObservable<Item> items)
         {
-            UploadedItems = items.Select(item => Upload(item));
-            Failed = Observable.Empty<Item>();
+            UploadedItems = items.SelectMany(item => Upload(item));
+            Failed = failer;
         }
 
         private static bool ShouldThrow
@@ -25,27 +26,31 @@
 
         public IObservable<UploadResults> UploadedItems { get; private set; }
 
-        public IObservable<Item> Failed
+        public IObservable<FailedItem> Failed
         {
-            get; private set;
+            get;
+            private set;
+        }
+        private Subject<FailedItem> failer = new Subject<FailedItem>();
+
+        private IObservable<UploadResults> Upload(Item item)
+        {
+            return Observable.Timer(TimeSpan.FromSeconds(7))
+                .SelectMany(_ =>
+                {
+                    if (ShouldThrow)
+                        return Observable.Throw<UploadResults>(new Exception("Item invalid"));
+                    else
+                        return Observable.Return(new UploadResults(item));
+                }).Catch((Exception ex) => RetryFailedItem(item));
         }
 
-        private UploadResults Upload(Item item)
+
+        public IObservable<UploadResults> RetryFailedItem(Item item)
         {
-            Thread.Sleep(7000);
-
-            if (ShouldThrow)
-            {
-                throw new InvalidOperationException("Upload failed");
-            }
-
-            return new UploadResults(item);
-        }
-
-
-        public void RetryFailedItem()
-        {
-            throw new NotImplementedException();
+            var sub = new Subject<Item>();
+            failer.OnNext(new FailedItem(item, (fixedItem) => { sub.OnNext(fixedItem); sub.OnCompleted(); }));
+            return sub.SelectMany(fixedItem => Upload(fixedItem));
         }
     }
 }
