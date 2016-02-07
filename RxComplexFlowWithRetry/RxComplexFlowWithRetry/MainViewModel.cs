@@ -5,9 +5,8 @@
     using System.ComponentModel;
     using System.Reactive.Linq;
     using System.Runtime.CompilerServices;
-    using System.Windows.Input;
     using Annotations;
-    using View.ViewModel;
+    using GalaSoft.MvvmLight.Command;
 
     public class MainViewModel : INotifyPropertyChanged
     {
@@ -18,7 +17,7 @@
         {
             // Takes 15 Items to upload
             var itemsObservable = Observable
-                .Interval(TimeSpan.FromSeconds(5))
+                .Interval(TimeSpan.FromSeconds(3))
                 .Select(id => new Item(string.Format("Item {0}", id + 1)))
                 .Take(15)
                 .Publish();
@@ -34,14 +33,17 @@
                .ObserveOnDispatcher()
                .Subscribe(uploadResults => UploadedItems.Add(uploadResults));
 
-            uploader.Failed.Subscribe(failedItem =>
-            {
-                FailedItem = failedItem.Item;
-                fixItem = failedItem.FixMe;
-            });
+            uploader.Failed
+                .ObserveOnDispatcher()
+                .Subscribe(
+                    failedItem =>
+                    {
+                        FailedItem = failedItem.Item;
+                        fixItem = failedItem.FixMe;
+                    });
 
             //The command that will be invoked when the user "fixes" an item and wants to retry it. It will be available only when there is a item that failed to upload.
-            RetryCommand = new RelayCommand(_ => Retry(), _ => FailedItem != null);
+            RetryCommand = new RelayCommand(() => Retry(), () => FailedItem != null);
 
             PendingItems = new ObservableCollection<Item>();
             UploadedItems = new ObservableCollection<UploadResults>();
@@ -57,6 +59,7 @@
             {
                 failedItem = value;
                 OnPropertyChanged();
+                RetryCommand.RaiseCanExecuteChanged();
             }
         }
         public Action<Item> fixItem { get; set; }
@@ -64,7 +67,7 @@
         public ObservableCollection<Item> PendingItems { get; set; }
         public ObservableCollection<UploadResults> UploadedItems { get; set; }
 
-        public ICommand RetryCommand { get; private set; }
+        public RelayCommand RetryCommand { get; private set; }
 
         private void Retry()
         {

@@ -8,7 +8,7 @@
     public class Uploader
     {
         private static Random random = new Random((int)DateTime.Now.Ticks);
-        private const int UploadFailureProbability = 80;
+        private const int UploadFailureProbability = 50;
 
         public Uploader(IObservable<Item> items)
         {
@@ -35,7 +35,7 @@
 
         private IObservable<UploadResults> Upload(Item item)
         {
-            return Observable.Timer(TimeSpan.FromSeconds(7))
+            return Observable.Timer(TimeSpan.FromSeconds(4))
                 .SelectMany(_ =>
                 {
                     if (ShouldThrow)
