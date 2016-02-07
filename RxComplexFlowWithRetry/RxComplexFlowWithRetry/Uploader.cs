@@ -12,7 +12,7 @@
 
         public Uploader(IObservable<Item> items)
         {
-            UploadedItems = items.SelectMany(item => Upload(item));
+            UploadedItems = items.Select(item => Upload(item)).Concat();
             Failed = failer;
         }
 
