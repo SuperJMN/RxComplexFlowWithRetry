@@ -7,6 +7,7 @@
 
     public class Uploader
     {
+        private static Random random = new Random((int)DateTime.Now.Ticks);
         private const int UploadFailureProbability = 80;
 
         public Uploader(IObservable<Item> items)
@@ -18,8 +19,7 @@
         private static bool ShouldThrow
         {
             get
-            {
-                var random = new Random((int)DateTime.Now.Ticks);
+            {                
                 return random.Next(0, 100) > UploadFailureProbability;
             }
         }

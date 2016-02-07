@@ -2,13 +2,17 @@
 {
     using System;
     using System.Collections.ObjectModel;
+    using System.ComponentModel;
     using System.Reactive.Linq;
+    using System.Runtime.CompilerServices;
     using System.Windows.Input;
+    using Annotations;
     using View.ViewModel;
 
-    public class MainViewModel
+    public class MainViewModel : INotifyPropertyChanged
     {
         private readonly Uploader uploader;
+        private Item failedItem;
 
         public MainViewModel()
         {
@@ -16,7 +20,8 @@
             var itemsObservable = Observable
                 .Interval(TimeSpan.FromSeconds(5))
                 .Select(id => new Item(string.Format("Item {0}", id + 1)))
-                .Take(15);
+                .Take(15)
+                .Publish();
 
             // We observe the incoming items to show them into the view
             itemsObservable
@@ -40,10 +45,20 @@
 
             PendingItems = new ObservableCollection<Item>();
             UploadedItems = new ObservableCollection<UploadResults>();
+
+            itemsObservable.Connect();
         }
 
         // When and item fails, it will be put inside this property
-        public Item FailedItem { get; set; }
+        public Item FailedItem
+        {
+            get { return failedItem; }
+            set
+            {
+                failedItem = value;
+                OnPropertyChanged();
+            }
+        }
         public Action<Item> fixItem { get; set; }
 
         public ObservableCollection<Item> PendingItems { get; set; }
@@ -56,6 +71,17 @@
             fixItem(FailedItem);
             FailedItem = null;
             fixItem = null;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
     }
 }

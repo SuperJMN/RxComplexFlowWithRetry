@@ -79,6 +79,7 @@
     </ApplicationDefinition>
     <Compile Include="FailedItem.cs" />
     <Compile Include="Item.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="RelayCommand.cs" />
     <Compile Include="UploadResults.cs" />
     <Page Include="MainWindow.xaml">
