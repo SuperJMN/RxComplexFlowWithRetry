@@ -11,7 +11,7 @@
     public class MainViewModel : INotifyPropertyChanged
     {
         private readonly Uploader uploader;
-        private Item failedItem;
+        private UICallback<Item> failedItem = new UICallback<Item>();
 
         public MainViewModel()
         {
@@ -38,12 +38,11 @@
                 .Subscribe(
                     failedItem =>
                     {
-                        FailedItem = failedItem.Item;
-                        fixItem = failedItem.FixMe;
+                        FailedItem = failedItem;
                     });
 
             //The command that will be invoked when the user "fixes" an item and wants to retry it. It will be available only when there is a item that failed to upload.
-            RetryCommand = new RelayCommand(() => Retry(), () => FailedItem != null);
+            RetryCommand = new RelayCommand(() => Retry(), () => FailedItem.IsReady);
 
             PendingItems = new ObservableCollection<Item>();
             UploadedItems = new ObservableCollection<UploadResults>();
@@ -52,7 +51,7 @@
         }
 
         // When and item fails, it will be put inside this property
-        public Item FailedItem
+        public UICallback<Item> FailedItem
         {
             get { return failedItem; }
             set
@@ -62,7 +61,6 @@
                 RetryCommand.RaiseCanExecuteChanged();
             }
         }
-        public Action<Item> fixItem { get; set; }
 
         public ObservableCollection<Item> PendingItems { get; set; }
         public ObservableCollection<UploadResults> UploadedItems { get; set; }
@@ -71,9 +69,9 @@
 
         private void Retry()
         {
-            fixItem(FailedItem);
-            FailedItem = null;
-            fixItem = null;
+            FailedItem.Callback(FailedItem.Item);
+            OnPropertyChanged();
+            RetryCommand.RaiseCanExecuteChanged();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

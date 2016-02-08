@@ -26,12 +26,12 @@
 
         public IObservable<UploadResults> UploadedItems { get; private set; }
 
-        public IObservable<FailedItem> Failed
+        public IObservable<UICallback<Item>> Failed
         {
             get;
             private set;
         }
-        private Subject<FailedItem> failer = new Subject<FailedItem>();
+        private Subject<UICallback<Item>> failer = new Subject<UICallback<Item>>();
 
         private IObservable<UploadResults> Upload(Item item)
         {
@@ -49,7 +49,7 @@
         public IObservable<UploadResults> RetryFailedItem(Item item)
         {
             var sub = new Subject<Item>();
-            failer.OnNext(new FailedItem(item, (fixedItem) => { sub.OnNext(fixedItem); sub.OnCompleted(); }));
+            failer.OnNext(new UICallback<Item>(item, sub));
             return sub.SelectMany(fixedItem => Upload(fixedItem));
         }
     }
