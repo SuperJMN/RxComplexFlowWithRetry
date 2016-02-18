@@ -70,8 +70,7 @@
         private void Retry()
         {
             FailedItem.Callback(FailedItem.Item);
-            OnPropertyChanged();
-            RetryCommand.RaiseCanExecuteChanged();
+            FailedItem = UICallback<Item>.Empty;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

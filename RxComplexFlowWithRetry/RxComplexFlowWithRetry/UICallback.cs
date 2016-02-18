@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RxComplexFlowWithRetry
 {
     public class UICallback<T>
     {
+        public static readonly UICallback<T> Empty = new UICallback<T>();
+        
         /// <summary>
         /// Callback to return the {T} back to the model. Can only be called once.
         /// </summary>
