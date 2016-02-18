@@ -8,7 +8,7 @@
     public class Uploader
     {
         private static Random random = new Random((int)DateTime.Now.Ticks);
-        private const int UploadFailureProbability = 50;
+        private const int UploadFailureProbability = 20;
 
         public Uploader(IObservable<Item> items)
         {
@@ -20,7 +20,7 @@
         {
             get
             {                
-                return random.Next(0, 100) > UploadFailureProbability;
+                return random.Next(0, 100) > 100 - UploadFailureProbability;
             }
         }
 
