@@ -9,13 +9,13 @@ namespace RxComplexFlowWithRetry
         /// <summary>
         /// Callback to return the {T} back to the model. Can only be called once.
         /// </summary>
-        public Action<T> Callback { get; set; }
+        public Action<T> Callback { get; private set; }
         public T Item { get; set; }
 
         /// <summary>
         /// Flag to indicate the callback can be used.
         /// </summary>
-        public Boolean IsReady { get; private set; }
+        public bool IsReady { get; private set; }
 
         public UICallback()
         {
@@ -29,8 +29,10 @@ namespace RxComplexFlowWithRetry
             {
                 if (IsReady)
                 {
-                    callbackObs.OnNext(it); callbackObs.OnCompleted();
+                    callbackObs.OnNext(it);
+                    callbackObs.OnCompleted();
                 }
+
                 IsReady = false;
             };
             IsReady = true;

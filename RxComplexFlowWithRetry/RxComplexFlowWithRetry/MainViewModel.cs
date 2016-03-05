@@ -10,7 +10,6 @@
 
     public class MainViewModel : INotifyPropertyChanged
     {
-        private readonly Uploader uploader;
         private UICallback<Item> failedItem = new UICallback<Item>();
 
         public MainViewModel()
@@ -28,7 +27,7 @@
                 .Subscribe(item => PendingItems.Add(item));
 
             // We also observe the items that uploaded successfully (the uploader holds them)
-            uploader = new Uploader(itemsObservable);
+            var uploader = new Uploader(itemsObservable);
             uploader.UploadedItems
                .ObserveOnDispatcher()
                .Subscribe(uploadResults => UploadedItems.Add(uploadResults));
